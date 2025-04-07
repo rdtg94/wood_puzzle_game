@@ -88,8 +88,8 @@ When a row or column is completely filled with blocks or diamonds:
 #### Informed Search Algorithms
 
 - **Greedy Search**: Uses a heuristic to estimate how close a state is to the goal without considering the path cost.
-- **A* Search**: Combines the path cost and a heuristic to find the optimal solution.
-- **Weighted A* Search**: Similar to A* but applies a weight to the heuristic, potentially finding solutions faster at the cost of optimality.
+- **A-Star Search**: Combines the path cost and a heuristic to find the optimal solution.
+- **Weighted A-Star Search**: Similar to A* but applies a weight to the heuristic, potentially finding solutions faster at the cost of optimality.
 
 ### Heuristics
 
