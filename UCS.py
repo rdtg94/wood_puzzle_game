@@ -1,107 +1,81 @@
-# Date: 2021-09-26
-# Version: 1.0
-# Author: Ricardo Gonçalves
+# Date: 2025-04-07
+# Version: 1.1
+# Author: Ricardo Gonçalves (rdtg94)
 # Description: Implementation of UCS algorithm for the game.
 
-
 #--------------------------------------------
-
 """
-This file implements the Uniform Cost Search (UCS) algorithm for solving a game problem.
-It explores the state space to find the path with the lowest cumulative cost (g(n)).
-The implementation uses a priority queue for state management and tracks explored states
-to avoid revisiting them. The algorithm guarantees finding the optimal solution if all
-step costs are non-negative.
-
-Returns:
-    - path: The list of moves if a solution is found, or [] if not.
-    - nodes_explored: The number of states analyzed.
-    - max_depth: The maximum depth explored within the given time limit.
+This file implements the Uniform Cost Search (UCS) algorithm.
+Finds the path with the lowest cumulative cost (g(n)).
 """
-
 #-----------------------------------------------
 # Libraries:
-
 import time
 import heapq
-
+from game_state import GameState # Ensure GameState is importable
 
 #-----------------------------------------------
-def uniform_cost_search(initial_state, time_limit):
+def uniform_cost_search(initial_state: GameState, time_limit: float):
     """
-    This function performs Uniform Cost Search (UCS).
-    It finds the path with the lowest cumulative cost (g(n)).
+    Performs Uniform Cost Search (UCS).
 
-    How does it work?
-    - Uses a 'priority queue' to expand the state with the lowest cost first.
-    - The cost is defined as the cumulative cost (g(n)) to reach a state.
-    - Guarantees finding the optimal solution if all step costs are non-negative.
+    Args:
+        initial_state (GameState): The starting state.
+        time_limit (float): Maximum execution time in seconds.
 
     Returns:
-        - path: A list of moves if a solution is found, or [] if not.
-        - nodes_explored: How many states were analyzed.
-        - max_depth: The maximum depth explored.
+        tuple: (path, nodes_explored, max_depth)
+            - path (list | None): List of moves if solution found, else None.
+            - nodes_explored (int): Number of states explored.
+            - max_depth (int): Maximum depth reached during search.
     """
-
     start_time = time.time()
+    # Priority queue stores: (cost, unique_id, state)
+    # unique_id is a tie-breaker to handle states with the same cost.
+    unique_id = 0
+    frontier = [(initial_state.cost, unique_id, initial_state)]
+    heapq.heapify(frontier)
+    unique_id += 1
 
-    # Priority queue: (cumulative_cost, tie_breaker, state, path)
-    priority_queue = [(0, 0, initial_state, [])]
+    # explored stores {state_hash: min_cost_to_reach}
+    explored = {hash(initial_state): initial_state.cost}
 
-    # Dictionary to track the minimum cost to reach each state.
-    # Key: hash of the state, Value: cumulative cost.
-    initial_key = (tuple(map(tuple, initial_state.board)), tuple(map(tuple, initial_state.current_piece)))
-    explored = {hash(initial_key): 0}
-
-    # Counters for statistics.
     nodes_explored = 0
     max_depth = 0
-    counter = 1  # Tie-breaker counter for priority queue.
 
-    while priority_queue and time.time() - start_time < time_limit:
-        # Remove the state with the lowest cumulative cost (g(n)) from the queue.
-        current_cost, _, state, path = heapq.heappop(priority_queue)
+    while frontier:
+        # Time limit check
+        if time.time() - start_time >= time_limit:
+            print(f"UCS: Time limit ({time_limit}s) reached.")
+            return None, nodes_explored, max_depth
+
+        current_cost, _, current_state = heapq.heappop(frontier)
         nodes_explored += 1
+        max_depth = max(max_depth, current_state.depth)
 
-        # Check if the goal state has been reached (all diamonds collected).
-        if state.diamonds_collected >= state.total_diamonds:
-            print(f"UCS: Diamond goal reached! Score: {state.score}, Cost (moves): {current_cost}")
-            return path, nodes_explored, len(path)
+        # Goal check
+        if current_state.is_goal_state():
+            print(f"UCS: Goal state found! Score: {current_state.score}, Cost: {current_cost}, Depth: {current_state.depth}")
+            return current_state.get_path(), nodes_explored, max_depth
 
-        # Update the maximum depth reached.
-        current_depth = len(path)
-        max_depth = max(max_depth, current_depth)
-
-        # Generate possible moves from the current state.
-        possible_moves = state.get_possible_moves()
-        if not possible_moves:
+        # Game over check (optional pruning)
+        if current_state.is_game_over():
             continue
 
-        for move in possible_moves:
-            # Apply the move to generate the next state.
-            next_state = state.apply_move(move)
+        # If we found a shorter path to this state already, skip
+        # This check is implicitly handled by the explored check below,
+        # but can be explicit: if current_cost > explored[hash(current_state)]: continue
 
-            # Skip invalid or duplicate states.
-            if next_state is None or next_state == state:
-                continue
+        # Explore successors
+        for successor_state in current_state.get_successors():
+            successor_hash = hash(successor_state)
+            new_cost = successor_state.cost # Cost is updated in apply_move/GameState init
 
-            # Define the cost of this move.
-            move_cost = 1  # Each move has a cost of 1.
-            new_cost = current_cost + move_cost  # Calculate the cumulative cost.
-            new_path = path + [move]  # Update the path.
+            # Check if successor is unexplored or found with a higher cost
+            if successor_hash not in explored or new_cost < explored[successor_hash]:
+                explored[successor_hash] = new_cost
+                heapq.heappush(frontier, (new_cost, unique_id, successor_state))
+                unique_id += 1
 
-            # Generate a unique key for the next state.
-            next_key = (tuple(map(tuple, next_state.board)), tuple(map(tuple, next_state.current_piece)))
-            next_hash = hash(next_key)
-
-            # Check if this new path to 'next_state' has a lower cost than previously recorded.
-            if new_cost < explored.get(next_hash, float('inf')):
-                # Update the minimum cost for this state.
-                explored[next_hash] = new_cost
-                # Add the state, its new cost, and path to the priority queue.
-                heapq.heappush(priority_queue, (new_cost, counter, next_state, new_path))
-                counter += 1  # Increment the tie-breaker counter.
-
-    # If the loop ends (queue is empty or time limit is reached), no solution was found.
-    print(f"UCS: Time limit reached or no solution found. Nodes: {nodes_explored}, Max Depth: {max_depth}")
-    return [], nodes_explored, max_depth
+    print(f"UCS: No solution found. Nodes explored: {nodes_explored}, Max Depth: {max_depth}")
+    return None, nodes_explored, max_depth

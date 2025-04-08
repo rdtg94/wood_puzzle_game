@@ -1,100 +1,79 @@
-# Date: 2025-04-06
-# Version: 1.0
-# Author: Ricardo Gonçalves
+# Date: 2025-04-07
+# Version: 1.1
+# Author: Ricardo Gonçalves (rdtg94)
 # Description: Implementation of DFS algorithm for the game.
 
 #--------------------------------------------
-
 """
-This file implements the Depth-First Search (DFS) algorithm for solving a game problem.
-It explores the state space by going as deep as possible along a branch before backtracking.
-The algorithm uses a stack for state management and tracks explored states to avoid revisiting them.
-It does not guarantee the shortest path but can be memory-efficient compared to BFS.
-
-Returns:
-- path: A list of moves if a solution is found, or [] if not.
-- nodes_explored: How many states were analyzed.
-- max_depth: The maximum depth explored.
+This file implements the Depth-First Search (DFS) algorithm.
+Explores as deeply as possible along each branch before backtracking.
 """
-
 #-----------------------------------------------
 # Libraries:
-
 import time
+from game_state import GameState # Ensure GameState is importable
 
 #------------------------------------------------
-def depth_first_search(initial_state, time_limit):
+def depth_first_search(initial_state: GameState, time_limit: float):
     """
-    This function performs Depth-First Search (DFS).
-    It explores the state space by going as deep as possible along a branch before backtracking.
+    Performs Depth-First Search (DFS).
 
-    How does it work?
-    - Uses a 'stack' (LIFO: Last In, First Out).
-    - Removes the most recently added state from the stack.
-    - Generates all its neighbors (states 1 move away).
-    - If a neighbor has never been visited, marks it as visited and adds it to the *top* of the stack.
+    Args:
+        initial_state (GameState): The starting state.
+        time_limit (float): Maximum execution time in seconds.
 
     Returns:
-        - path: A list of moves if a solution is found, or [] if not.
-        - nodes_explored: How many states were analyzed.
-        - max_depth: The maximum depth explored.
+        tuple: (path, nodes_explored, max_depth)
+            - path (list | None): List of moves if solution found, else None.
+            - nodes_explored (int): Number of states explored.
+            - max_depth (int): Maximum depth reached.
     """
-
     start_time = time.time()
-
-    stack = [(initial_state, [])]
-
-    # Set to track globally explored states to avoid revisiting.
+    stack = [(initial_state, [])] # Stack stores (state, path_to_state)
+    # Explored set is crucial to prevent infinite loops in graphs with cycles
+    # or redundant paths.
     explored = set()
-
-    # Counters for statistics.
     nodes_explored = 0
     max_depth = 0
 
-    # Main loop: Continue while there are states to explore and time remains.
-    while stack and time.time() - start_time < time_limit:
-        # Remove the most recently added state/path from the stack (LIFO).
-        state, path = stack.pop()
-        nodes_explored += 1 
+    while stack:
+        # Time limit check
+        if time.time() - start_time >= time_limit:
+            print(f"DFS: Time limit ({time_limit}s) reached.")
+            return None, nodes_explored, max_depth
 
-        # Generate a unique key for the current state.
-        state_key = (tuple(map(tuple, state.board)), tuple(map(tuple, state.current_piece)))
-        state_hash = hash(state_key)
-
-        # Skip already explored states.
-        if state_hash in explored:
-            continue
-
-        # Mark the state as explored.
-        explored.add(state_hash)
-
-        # Check if the goal state has been reached (all diamonds collected).
-        if state.diamonds_collected >= state.total_diamonds:
-            print(f"DFS: Diamond goal reached! Score: {state.score}")
-            return path, nodes_explored, len(path)
-
-        # Update the maximum depth reached.
+        current_state, path = stack.pop()
+        nodes_explored += 1
         current_depth = len(path)
         max_depth = max(max_depth, current_depth)
 
-        # Generate possible moves from the current state.
-        possible_moves = state.get_possible_moves()
+        current_hash = hash(current_state)
+        # Check if already explored *after* popping, common DFS optimization
+        if current_hash in explored:
+            continue
+        explored.add(current_hash)
 
-        if not possible_moves:
+        # Goal check
+        if current_state.is_goal_state():
+            print(f"DFS: Goal state found! Score: {current_state.score}, Depth: {current_depth}")
+            return path, nodes_explored, max_depth
+
+        # Game over check (optional pruning)
+        if current_state.is_game_over():
             continue
 
-        # Iterate over the possible moves in reverse order to maintain DFS behavior.
-        for move in reversed(possible_moves):
-            next_state = state.apply_move(move)
+        # Explore successors - Add successors to the stack
+        # Reversing helps explore paths in a more 'natural' order sometimes, but not strictly necessary
+        successors = current_state.get_successors()
+        # for successor_state in reversed(successors): # Optional reverse
+        for successor_state in successors:
+            # Check explored *before* pushing to potentially save stack space,
+            # but checking after popping (as done above) is also valid for correctness.
+            # successor_hash = hash(successor_state)
+            # if successor_hash not in explored:
+            new_path = path + [successor_state.move]
+            stack.append((successor_state, new_path))
 
-            # Skip invalid or duplicate states.
-            if next_state is None or next_state == state:
-                continue
 
-            # Add the new state and path to the stack.
-            new_path = path + [move]
-            stack.append((next_state, new_path))
-
-    # If the loop ends (stack is empty or time limit is reached), no solution was found.
-    print(f"DFS: Time limit reached or no solution found. Nodes: {nodes_explored}, Max Depth: {max_depth}")
-    return [], nodes_explored, max_depth
+    print(f"DFS: No solution found. Nodes explored: {nodes_explored}, Max Depth: {max_depth}")
+    return None, nodes_explored, max_depth

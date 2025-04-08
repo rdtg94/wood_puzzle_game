@@ -1,148 +1,126 @@
 # Wood Block Puzzle Game
 
-## Introduction
+## Overview
+Wood Block Puzzle is a strategic puzzle game where players place wooden blocks on a grid to clear lines and collect diamonds. The game includes intelligent hint systems and algorithmic solvers to assist players when they get stuck.
 
-Wood Block Puzzle is a challenging puzzle game where players strategically place blocks on a board to complete rows and columns. The game features multiple difficulty levels, various board sizes, and special game elements like diamonds for bonus points. It also includes an extensive AI system with multiple algorithms to assist gameplay or play automatically.
+Author: Ricardo Gonçalves (rdtg94)
+Version: 3.0 (April 2025)
 
-# Wood Block Puzzle Game
+## Game Objective
+- Place wooden blocks on the game board
+- Clear full lines and columns to earn points
+- Collect diamonds for bonus points
+- Progress through increasingly difficult levels
+- Achieve the highest score possible before running out of valid moves
 
 ## Features
-
-- **Multiple difficulty levels**: Easy, Medium, Hard, and Expert
-- **Variable board sizes**: 4×4, 5×5, 6×6, and 7×7
-- **Dynamic piece generation**: Different piece shapes based on the selected difficulty
-- **Special game elements**: Diamonds for bonus points
-- **Multiple gameplay modes**:
-  - Human player mode
-  - AI assistance mode
-  - AI automatic play mode
-- **Advanced AI algorithms**:
-  - Uninformed search algorithms (BFS, DFS, UCS, DLS, IDS)
-  - Informed search algorithms with heuristics (Greedy, A*, Weighted A*)
+- Multiple difficulty levels with different board sizes
+- Dynamic scoring system
+- Diamond collection mechanic
+- Wood-themed visual design
+- Intelligent hint system
+- Various search algorithms for move suggestions
 
 ## How to Play
-
-### Game Objective
-
-- Complete rows and columns to clear them from the board
-- Collect diamonds to gain bonus points
-- Keep your score above zero to continue playing
-- Collect all diamonds on the board to win
+1. **Start a Game**: Select a difficulty level from the main menu
+2. **Place Blocks**: Drag and drop the current block onto the game board
+3. **Clear Lines**: Fill an entire row or column to clear it and earn points
+4. **Collect Diamonds**: Clear lines containing diamonds for bonus points
+5. **Reroll Pieces**: Spend points to get a new piece if you're stuck (costs increase with difficulty)
+6. **Use Hints**: Request a suggested move with the "AI Hint" button
 
 ### Controls
+- **Left Mouse Button**: Click and drag to move blocks
+- **Reroll Button**: Get a new random piece (costs points)
+- **AI Hint Button**: Shows a suggested valid move
+- **Quit Button**: Return to the main menu
 
-- Enter coordinates (row column) to place the current piece on the board
-- Enter 'R' to reroll and get a new piece (costs points)
-- Enter 'Q' to quit the current game
+### Game Mechanics
+- **Scoring**:
+  - Base penalty for placing a piece: 10 points
+  - Base score for clearing a line: 50 points × difficulty
+  - Diamond bonus: 100 points × difficulty
+  - Combo bonus for multiple lines: (base_points ÷ 2) per additional line
+  - Reroll penalty: 10 points × difficulty
 
-### Scoring System
+- **Victory Condition**:
+  - Collect all diamonds on the board
 
-- Clearing rows and columns: 50 × difficulty points per row/column
-- Combo bonus: Additional points for clearing multiple rows/columns at once
-- Diamond collection: 100 × difficulty points per diamond
-- Piece placement: -10 × (difficulty / 2) points penalty
-- Rerolling pieces: -10 × (difficulty / 2) points penalty
+- **Game Over Conditions**:
+  - Score drops to zero or below
+  - No valid moves left for the current piece
 
-## Game Mechanics
+## Difficulty Levels
+1. **Easy**: 4×4 grid
+2. **Medium**: 5×5 grid
+3. **Hard**: 6×6 grid
+4. **Expert**: 7×7 grid
 
-### Board Generation
+Higher difficulties feature:
+- Larger game boards
+- More complex pieces
+- Increased obstacle density
+- Higher scoring potential
 
-The game generates a board with:
-- Size determined by the difficulty level (Easy: 4×4, Medium: 5×5, Hard: 6×6, Expert: 7×7)
-- Random placement of diamonds (approximately 10% of the board)
-- Random placement of obstacles (approximately 10% of the board)
+## Algorithms
+The game implements multiple search algorithms for finding optimal moves:
+- Breadth-First Search (BFS)
+- Depth-First Search (DFS)
+- Uniform Cost Search (UCS)
+- Depth-Limited Search (DLS)
+- Iterative Deepening Search (IDS)
+- Greedy Best-First Search
+- A* Search
+- Weighted A* Search
 
-### Piece Generation
+## Requirements
+- Python 3.6+
+- Pygame
+- Pygame_gui
 
-Pieces vary by difficulty:
-- **Easy (Level 1)**: Basic shapes (straight lines and simple L shapes)
-- **Medium (Level 2)**: Adds 2×2 squares and more complex L shapes
-- **Hard (Level 3)**: Adds longer L shapes and more complex pieces
-- **Expert (Level 4)**: Adds T shapes, Z shapes, and other complex configurations
+## Installation
 
-### Line Clearing
-
-When a row or column is completely filled with blocks or diamonds:
-- The entire row/column is cleared
-- Points are awarded based on the number of rows/columns cleared
-- Diamonds in cleared rows/columns are collected and award bonus points
-- Combo bonuses are awarded for clearing multiple rows/columns at once
-
-## AI System
-
-### Gameplay Modes with AI
-
-1. **AI Assistance Mode**: The AI suggests the optimal move, and the player decides whether to follow the suggestion or make their own move.
-2. **AI Automatic Play Mode**: The AI plays the game automatically using the selected algorithm and heuristic.
-
-### Available AI Algorithms
-
-#### Uninformed Search Algorithms
-
-- **Breadth-First Search (BFS)**: Explores all possible moves level by level, guaranteeing the shortest solution path in terms of number of moves.
-- **Depth-First Search (DFS)**: Explores as deep as possible along each branch before backtracking.
-- **Uniform Cost Search (UCS)**: Prioritizes paths with the lowest cumulative cost.
-- **Depth-Limited Search (DLS)**: Limits the depth of exploration to avoid going too deep.
-- **Iterative Deepening Search (IDS)**: Combines the advantages of BFS and DFS by gradually increasing the depth limit.
-
-#### Informed Search Algorithms
-
-- **Greedy Search**: Uses a heuristic to estimate how close a state is to the goal without considering the path cost.
-- **A-Star Search**: Combines the path cost and a heuristic to find the optimal solution.
-- **Weighted A-Star Search**: Similar to A* but applies a weight to the heuristic, potentially finding solutions faster at the cost of optimality.
-
-### Heuristics
-
-- **Maximize Score**: Prioritizes moves that result in the highest immediate score gain.
-- **Diamond Proximity**: Prioritizes moves that place pieces closer to diamonds on the board.
-
-## Installation and Requirements
-
-
-### Requirements
-
-- Python 3.6 or higher
-- Colorama package (for colored terminal output)
-
-### Running the Game
-
-Since the game is already installed on your computer, simply run:
-```
-python WoodPuzzle_Main.py
+### Install Python Dependencies
+```bash
+pip install pygame pygame_gui
 ```
 
-If the colorama package is not installed, you can install it with:
+### Download Game Files
+Clone the repository or download the game files:
+```bash
+git clone https://github.com/username/wood-block-puzzle.git
+cd wood-block-puzzle
 ```
-pip install colorama
+
+## Running the Game
+Execute the main game file:
+```bash
+python WoodPuzzle_GUI.py
 ```
 
-## Project Structure
+### Shell Version
+The game also includes a console-based version for those who prefer to play in a terminal environment:
+```bash
+python WoodPuzzle_Shell.py
+```
+The shell version provides the same gameplay mechanics but with a text-based interface, making it suitable for environments where graphical display is unavailable or for users who prefer command-line interfaces.
 
-- `WoodPuzzle_Main.py`: Main game file with the core functionality and game loop
-- `game_state.py`: Implementation of the GameState class for representing game states
-- `Ai_algorithms.py`: Implementation of AI options for the game
-- Search algorithm implementations:
-  - `BFS.py`: Breadth-First Search algorithm
-  - `DFS.py`: Depth-First Search algorithm
-  - `UCS.py`: Uniform Cost Search algorithm
-  - `DLS.py`: Depth-Limited Search algorithm
-  - `IDS.py`: Iterative Deepening Search algorithm
-  - `GREEDY.py`: Greedy Search algorithm
-  - `A_STAR.py`: A* Search algorithm
-  - `A_STAR_W.py`: Weighted A* Search algorithm
+## File Structure
+- **WoodPuzzle_GUI.py**: Main game file with GUI implementation
+- **constants.py**: Game constants and configuration values
+- **game_state.py**: Game state representation and logic
+- **Ai_algorithms.py**: Implementation of hint system and search algorithms
+- **A_STAR.py**, **A_STAR_W.py**, **BFS.py**, etc.: Individual search algorithm implementations
+- **diamond.png**, **wood_texture.png**: Game assets
 
-## Educational Value
+## Troubleshooting
+- **Missing Assets**: Ensure image files are in the same directory as the game
+- **Display Issues**: Try adjusting screen resolution or window size
+- **Performance Problems**: Lower difficulty levels require fewer computational resources
 
-This project serves as an excellent resource for learning about:
-- Game design and mechanics
-- Search algorithms in artificial intelligence
-- Heuristic functions and their applications
-- Game state representation and management
-- Python programming and object-oriented design
+## License
+This project is released under the MIT License. See LICENSE file for details.
 
-## Credits
-
-- **Authors**: Ricardo Gonçalves
-- **Version**: 1.0
-- **Date**: April 2025
-
+## Acknowledgments
+- Special thanks to the Pygame community
+- All contributors and testers

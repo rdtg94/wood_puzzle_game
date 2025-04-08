@@ -1,68 +1,81 @@
-# Date: 2025-04-06
-# Version: 1.1
-# Author: Ricardo Gonçalves
-# Description: Implementation of Greedy Search algorithm with heuristic selection.
+# Date: 2025-04-07
+# Version: 1.2
+# Author: Ricardo Gonçalves (rdtg94)
+# Description: Implementation of Greedy Best-First Search algorithm.
 
 #--------------------------------------------
-
 """
-This file implements the Greedy Best-First Search (Greedy Search) algorithm for solving a game problem.
-Greedy Search is a heuristic-based algorithm that prioritizes states that appear closest to the goal
-based on a heuristic function. It is fast but does not guarantee finding the optimal solution.
-
-Returns:
-    - path: The list of moves if a solution is found, or [] if not.
-    - nodes_explored: The number of states analyzed.
-    - max_depth: The maximum depth explored within the given time limit.
+This file implements the Greedy Best-First Search algorithm.
+Prioritizes states based solely on the heuristic value (h(n)). Fast but not optimal.
 """
-
 #-----------------------------------------------
 # Libraries:
-
 import time
 import heapq
+from game_state import GameState # Ensure GameState is importable
 
 #-----------------------------------------------
-def greedy_search(initial_state, time_limit, heuristic):
+def greedy_search(initial_state: GameState, time_limit: float, heuristic: callable):
     """
-    Performs Greedy Best-First Search (Greedy Search).
-    It prioritizes states that appear closest to the goal based on a heuristic function.
+    Performs Greedy Best-First Search.
 
     Args:
-        initial_state (GameState): The initial state of the game.
-        time_limit (int): The maximum time allowed for the search (in seconds).
-        heuristic (function): The heuristic function to use for estimating the cost to the goal.
+        initial_state (GameState): The starting state.
+        time_limit (float): Maximum execution time in seconds.
+        heuristic (callable): Function `h(state)` estimating cost to goal.
 
     Returns:
         tuple: (path, nodes_explored, max_depth)
-            - path: A list of moves leading to the goal state, or None if no solution is found.
-            - nodes_explored: The number of states explored during the search.
-            - max_depth: The maximum depth reached during the search.
+            - path (list | None): List of moves if solution found, else None.
+            - nodes_explored (int): Number of states explored.
+            - max_depth (int): Maximum depth reached.
     """
     start_time = time.time()
-    frontier = []  # Priority queue for states
-    heapq.heappush(frontier, (heuristic(initial_state), initial_state))  # Push initial state with its heuristic value
-    explored = set()  # Set to track explored states
+
+    if not callable(heuristic):
+        print("GREEDY Error: Invalid heuristic function provided.")
+        return None, 0, 0
+
+    # Priority queue stores: (heuristic_value, unique_id, state)
+    unique_id = 0
+    h_initial = heuristic(initial_state)
+    frontier = [(h_initial, unique_id, initial_state)]
+    heapq.heapify(frontier)
+    unique_id += 1
+
+    # explored stores hashes of visited states to avoid cycles/redundancy
+    explored = {hash(initial_state)}
+
     nodes_explored = 0
     max_depth = 0
 
-    while frontier and time.time() - start_time < time_limit:
-        # Pop the state with the lowest heuristic value
-        _, current_state = heapq.heappop(frontier)
+    while frontier:
+        # Time limit check
+        if time.time() - start_time >= time_limit:
+            print(f"GREEDY: Time limit ({time_limit}s) reached.")
+            return None, nodes_explored, max_depth
+
+        _, _, current_state = heapq.heappop(frontier)
         nodes_explored += 1
         max_depth = max(max_depth, current_state.depth)
 
-        # Check if the current state is a goal state
+        # Goal check
         if current_state.is_goal_state():
+            print(f"GREEDY: Goal state found! Score: {current_state.score}, Depth: {current_state.depth}")
             return current_state.get_path(), nodes_explored, max_depth
 
-        # Add the current state to the explored set
-        explored.add(current_state)
+        # Game over check (optional pruning)
+        if current_state.is_game_over():
+            continue
 
-        # Generate successors
-        for successor in current_state.get_successors():
-            if successor not in explored:
-                heapq.heappush(frontier, (heuristic(successor), successor))
+        # Explore successors
+        for successor_state in current_state.get_successors():
+            successor_hash = hash(successor_state)
+            if successor_hash not in explored:
+                explored.add(successor_hash)
+                h_successor = heuristic(successor_state)
+                heapq.heappush(frontier, (h_successor, unique_id, successor_state))
+                unique_id += 1
 
-    # If no solution is found within the time limit
+    print(f"GREEDY: No solution found. Nodes explored: {nodes_explored}, Max Depth: {max_depth}")
     return None, nodes_explored, max_depth

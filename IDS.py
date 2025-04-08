@@ -1,97 +1,83 @@
-# Date: 2025-04-06
-# Version: 1.0
-# Author: Ricardo Gonçalves
-# Description: Implementation of Iterative Deepening Search algorithm for the game.
+# Date: 2025-04-07
+# Version: 1.1
+# Author: Ricardo Gonçalves (rdtg94)
+# Description: Implementation of Iterative Deepening Search algorithm.
 
 #--------------------------------------------
-
 """
-This file implements the Iterative Deepening Search (IDS) algorithm for solving a game problem.
-IDS combines the advantages of BFS (finding the shortest path in terms of depth) and DFS
-(lower memory usage). It performs multiple depth-limited searches, increasing the depth
-limit with each iteration until a solution is found or the time limit is exceeded.
-
-Returns:
-    - path: The list of moves if a solution is found, or [] if not.
-    - nodes_explored_overall: The total number of states analyzed across all iterations.
-    - max_depth_overall: The maximum depth explored in any iteration.
+This file implements the Iterative Deepening Search (IDS) algorithm.
+Combines benefits of BFS (completeness, optimality for unit costs) and DFS (memory).
 """
-
 #-----------------------------------------------
 # Libraries:
-
 import time
+from game_state import GameState # Ensure GameState is importable
+from DLS import depth_limited_search # Import DLS function
+from constants import DEFAULT_IDS_MAX_DEPTH
 
-#Importing the depth-limited search function from DLS module.
-from DLS import depth_limited_search  
 #-----------------------------------------------
 
-def iterative_deepening_search(initial_state, time_limit):
+def iterative_deepening_search(initial_state: GameState, time_limit: float):
     """
-    This function performs Iterative Deepening Search (IDS).
-    It combines the advantages of BFS and DFS by performing multiple depth-limited searches.
+    Performs Iterative Deepening Search (IDS).
 
-    How does it work?
-    - Performs multiple Depth-Limited Searches (DLS), increasing the depth limit with each iteration.
-    - Starts with a small depth limit (e.g., 1).
-    - If no solution is found, increases the depth limit (e.g., to 2) and repeats the DLS.
-    - Continues increasing the depth limit until a solution is found or the time limit is exceeded.
-    - Guarantees finding the shallowest solution (like BFS) while using less memory (like DFS).
+    Args:
+        initial_state (GameState): The starting state.
+        time_limit (float): Maximum total execution time in seconds.
 
     Returns:
-        - path: A list of moves if a solution is found, or [] if not.
-        - nodes_explored_overall: The total number of states analyzed across all iterations.
-        - max_depth_overall: The maximum depth explored in any iteration.
+        tuple: (path, nodes_explored_total, max_depth_total)
+            - path (list | None): List of moves if solution found, else None.
+            - nodes_explored_total (int): Total nodes explored across all DLS iterations.
+            - max_depth_total (int): Maximum depth reached in the final successful iteration or overall.
     """
-
-    # Record the global start time for IDS.
     start_time = time.time()
+    nodes_explored_total = 0
+    max_depth_total = 0
+    solution_path = None
 
-    # Variables to accumulate overall statistics.
-    max_depth_overall = 0
-    nodes_explored_overall = 0
-    found_path = []  # To store the solution path if found.
-
-    # Main IDS loop: Increase the depth limit with each iteration.
-    for depth_limit in range(1, 100):  # Arbitrary maximum depth limit (e.g., 100).
-        # Check the elapsed time before starting a new DLS iteration.
+    # Iterate through increasing depth limits
+    for depth_limit in range(DEFAULT_IDS_MAX_DEPTH): # Iterate up to a max depth
         elapsed_time = time.time() - start_time
-        if elapsed_time >= time_limit:
-            print(f"IDS: Time limit reached ({elapsed_time:.2f}s) before starting DLS(depth={depth_limit}).")
-            break
-
-        # Calculate the remaining time for this specific DLS call.
         remaining_time = time_limit - elapsed_time
+
         if remaining_time <= 0:
+            print(f"IDS: Time limit ({time_limit}s) reached before starting depth {depth_limit}.")
             break
 
-        print(f"IDS: Starting DLS with depth limit {depth_limit}, remaining time {remaining_time:.2f}s.")
+        # print(f"IDS: Starting DLS with depth limit {depth_limit}, Remaining time: {remaining_time:.2f}s")
 
-        # Call the Depth-Limited Search (DLS) function with the current depth limit.
-        path, nodes_in_iteration, max_depth_in_iteration = depth_limited_search(
+        # Perform DLS for the current depth limit
+        path, nodes_in_iter, depth_in_iter = depth_limited_search(
             initial_state, remaining_time, depth_limit
         )
 
-        # Accumulate the total nodes explored across all iterations.
-        nodes_explored_overall += nodes_in_iteration
-        # Update the maximum depth reached across all iterations.
-        max_depth_overall = max(max_depth_overall, max_depth_in_iteration)
+        # Accumulate statistics
+        nodes_explored_total += nodes_in_iter
+        max_depth_total = max(max_depth_total, depth_in_iter) # Track max depth reached overall
 
-        # Check if the DLS found a solution (non-empty path).
-        if path:
-            print(f"IDS: Solution found at depth {depth_limit}.")
-            found_path = path
-            # Update the maximum depth if the solution path is deeper than previously recorded.
-            max_depth_overall = max(max_depth_overall, len(path))
-            break
+        # Check if DLS returned due to time limit within DLS itself
+        current_elapsed = time.time() - start_time
+        if current_elapsed >= time_limit and not path: # Check if time ran out AND no solution found this iter
+             print(f"IDS: Time limit ({time_limit}s) likely reached during DLS(depth={depth_limit}).")
+             break # Stop IDS
 
-        # Check the elapsed time after the DLS call.
-        if time.time() - start_time >= time_limit:
-            print(f"IDS: Time limit reached during or after DLS(depth={depth_limit}).")
-            break
+        # Check if DLS found a solution
+        if path is not None:
+            print(f"IDS: Solution found at depth {depth_limit}!")
+            solution_path = path
+            # Update max_depth_total specifically to the solution depth if found
+            max_depth_total = max(max_depth_total, len(path))
+            break # Solution found, exit IDS loop
 
-    # End of IDS loop.
-    print(f"IDS: Finished. Total nodes explored: {nodes_explored_overall}, Max depth reached: {max_depth_overall}.")
+        # If DLS returned None and status wasn't 'cutoff' (implicitly checked by path is None),
+        # it means the search space was exhausted up to this depth without finding a solution or hitting the limit.
+        # If DLS returned None because of 'cutoff', IDS continues to the next depth.
 
-    # Return the solution path (or empty if not found) and overall statistics.
-    return found_path, nodes_explored_overall, max_depth_overall
+    # End of IDS loop
+    if solution_path:
+        print(f"IDS: Finished. Solution found. Total nodes: {nodes_explored_total}, Solution Depth: {len(solution_path)}")
+    else:
+        print(f"IDS: Finished. No solution found (or time limit reached). Total nodes: {nodes_explored_total}, Max depth explored: {max_depth_total}")
+
+    return solution_path, nodes_explored_total, max_depth_total

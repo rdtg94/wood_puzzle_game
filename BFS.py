@@ -1,92 +1,67 @@
-# Date: 2025-04-06
-# Version: 1.0
-# Author: Ricardo Gonçalves
+# Date: 2025-04-07
+# Version: 1.1
+# Author: Ricardo Gonçalves (rdtg94)
 # Description: Implementation of BFS algorithm for the game.
 
-
 #--------------------------------------------
-
 """
-This file implements the Breadth-First Search (BFS) algorithm for solving a game problem. 
-It explores the state space level by level to find the shortest path to a goal state, 
-defined by diamond collection. The implementation uses a queue for 
-state management and tracks explored states to avoid revisiting them. The algorithm 
-returns the solution path, the number of nodes explored, and the maximum depth reached 
-within a given time limit.
+This file implements the Breadth-First Search (BFS) algorithm.
+Finds the shortest path in terms of the number of moves.
 """
-
 #-----------------------------------------------
 #Libraries:
-
 import time
 from collections import deque
+from game_state import GameState # Ensure GameState is importable
 
 #------------------------------------------------
-def breadth_first_search(initial_state, time_limit):
+def breadth_first_search(initial_state: GameState, time_limit: float):
     """
-    This function performs Breadth-First Search (BFS).
-    It explores the state space level by level.
+    Performs Breadth-First Search (BFS).
 
-    How does it work?
-    - Uses a 'queue' (FIFO: First In, First Out).
-    - Removes the oldest state from the queue.
-    - Generates all its neighbors (states 1 move away).
-    - If a neighbor has never been visited, marks it as visited and adds it to the *end* of the queue.
-    - Guarantees finding the shortest path in terms of *number of moves*.
-    - May use a lot of memory if the 'breadth' of the search tree is large, higher difficulties.
+    Args:
+        initial_state (GameState): The starting state.
+        time_limit (float): Maximum execution time in seconds.
 
     Returns:
-        - path: A list of moves if a solution is found, or [] if not.
-        - nodes_explored: How many states were analyzed.
-        - max_depth: The maximum depth explored.
+        tuple: (path, nodes_explored, max_depth)
+            - path (list | None): List of moves if solution found, else None.
+            - nodes_explored (int): Number of states explored.
+            - max_depth (int): Maximum depth reached.
     """
-
     start_time = time.time()
-
-    queue = deque([(initial_state, [])])
-
-    explored = set()
-
-    # Add the initial state as explored/visited.
-    initial_key = (tuple(map(tuple, initial_state.board)), tuple(map(tuple, initial_state.current_piece)))
-    explored.add(hash(initial_key))
-
-    # Counters for statistics.
+    queue = deque([(initial_state, [])]) # Queue stores (state, path_to_state)
+    explored = {hash(initial_state)} # Set stores hashes of explored states
     nodes_explored = 0
     max_depth = 0
 
-    while queue and time.time() - start_time < time_limit:
-        # Remove the oldest state/path from the *front* of the queue (FIFO).
-        state, path = queue.popleft()
-        nodes_explored += 1  
+    while queue:
+        # Time limit check
+        if time.time() - start_time >= time_limit:
+            print(f"BFS: Time limit ({time_limit}s) reached.")
+            return None, nodes_explored, max_depth
 
-        # Check if we've reached the goal (all diamonds collected).
-        if state.diamonds_collected >= state.total_diamonds:
-            print(f"BFS: Diamond goal reached! Score: {state.score}")
-            return path, nodes_explored, len(path)
-
+        current_state, path = queue.popleft()
+        nodes_explored += 1
         current_depth = len(path)
         max_depth = max(max_depth, current_depth)
 
-        # Get all possible moves from the current state.
-        possible_moves = state.get_possible_moves()
-        if not possible_moves:
+        # Goal check
+        if current_state.is_goal_state():
+            print(f"BFS: Goal state found! Score: {current_state.score}, Depth: {current_depth}")
+            return path, nodes_explored, max_depth
+
+        # Game over check (optional, but can prune branches)
+        if current_state.is_game_over():
             continue
 
-        for move in possible_moves:
-            next_state = state.apply_move(move)
-            if next_state is None or next_state == state:
-                continue
+        # Explore successors
+        for successor_state in current_state.get_successors():
+            successor_hash = hash(successor_state)
+            if successor_hash not in explored:
+                explored.add(successor_hash)
+                new_path = path + [successor_state.move] # Add the move that led to successor
+                queue.append((successor_state, new_path))
 
-            # Generate the unique key for the next state.
-            next_key = (tuple(map(tuple, next_state.board)), tuple(map(tuple, next_state.current_piece)))
-            next_hash = hash(next_key)
-
-            # Check if this neighboring state *has not been explored yet*.
-            if next_hash not in explored:
-                explored.add(next_hash)
-                new_path = path + [move]
-                queue.append((next_state, new_path))
-
-    print(f"BFS: Time limit reached. Nodes explored: {nodes_explored}, Max depth: {max_depth}")
-    return [], nodes_explored, max_depth
+    print(f"BFS: No solution found. Nodes explored: {nodes_explored}, Max depth: {max_depth}")
+    return None, nodes_explored, max_depth

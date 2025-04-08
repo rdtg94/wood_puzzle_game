@@ -1,55 +1,95 @@
-# Date: 2025-04-06
-# Version: 1.1
-# Author: Ricardo Gonçalves
-# Description: Implementation of A* (A-Star) Search algorithm with heuristic selection.
+# Date: 2025-04-07
+# Version: 1.2
+# Author: Ricardo Gonçalves (rdtg94)
+# Description: Implementation of A* (A-Star) Search algorithm.
 
 #--------------------------------------------
-
 """
-This file implements the A* (A-Star) Search algorithm for solving a game problem.
-A* is a heuristic-based algorithm that balances the cost of reaching a state (g)
-and an estimate of the cost to reach the goal (h). It guarantees finding the optimal
-solution if the heuristic is admissible.
-
-Returns:
-    - path: The list of moves if a solution is found, or [] if not.
-    - nodes_explored: The number of states analyzed.
-    - max_depth: The maximum depth explored within the given time limit.
+This file implements the A* (A-Star) Search algorithm.
+Balances cost to reach state (g(n)) and estimated cost to goal (h(n)).
+Finds the optimal (lowest cost) path if heuristic is admissible.
 """
-
 #-----------------------------------------------
 # Libraries:
-
 import time
 import heapq
+from game_state import GameState # Ensure GameState is importable
 
 #-----------------------------------------------
-def astar_search(initial_state, time_limit, heuristic):
+def astar_search(initial_state: GameState, time_limit: float, heuristic: callable):
     """
-    A* search algorithm.
+    Performs A* Search.
+
+    Args:
+        initial_state (GameState): The starting state.
+        time_limit (float): Maximum execution time in seconds.
+        heuristic (callable): Admissible heuristic function `h(state)`.
+
+    Returns:
+        tuple: (path, nodes_explored, max_depth)
+            - path (list | None): List of moves for the optimal path if found, else None.
+            - nodes_explored (int): Number of states explored.
+            - max_depth (int): Maximum depth reached during search.
     """
     start_time = time.time()
-    frontier = []
-    heapq.heappush(frontier, (0, initial_state))  # Priority queue with (f(n), state)
-    explored = set()
+
+    if not callable(heuristic):
+        print("A* Error: Invalid heuristic function provided.")
+        return None, 0, 0
+
+    # Priority queue stores: (f_value, unique_id, state) where f = g + h
+    # g is state.cost
+    unique_id = 0
+    g_initial = initial_state.cost
+    h_initial = heuristic(initial_state)
+    f_initial = g_initial + h_initial
+    frontier = [(f_initial, unique_id, initial_state)]
+    heapq.heapify(frontier)
+    unique_id += 1
+
+    # explored stores {state_hash: min_g_cost_to_reach}
+    explored = {hash(initial_state): g_initial}
+
     nodes_explored = 0
+    max_depth = 0
 
-    while frontier and time.time() - start_time < time_limit:
-        f, current_state = heapq.heappop(frontier)
+    while frontier:
+        # Time limit check
+        if time.time() - start_time >= time_limit:
+            print(f"A*: Time limit ({time_limit}s) reached.")
+            return None, nodes_explored, max_depth
+
+        f_current, _, current_state = heapq.heappop(frontier)
         nodes_explored += 1
+        max_depth = max(max_depth, current_state.depth)
 
+        # Goal check
         if current_state.is_goal_state():
-            print(f"Goal state found after exploring {nodes_explored} nodes.")
-            return current_state.get_path(), nodes_explored, current_state.depth
+            print(f"A*: Goal state found! Score: {current_state.score}, Cost (g): {current_state.cost}, Depth: {current_state.depth}")
+            return current_state.get_path(), nodes_explored, max_depth
 
-        explored.add(current_state)
+        # Game over check (optional pruning)
+        if current_state.is_game_over():
+            continue
 
-        for successor in current_state.get_successors():
-            if successor not in explored:
-                g = successor.cost
-                h = heuristic(successor)
-                f = g + h
-                heapq.heappush(frontier, (f, successor))
+        # Optimization: If we found a shorter path to this state already, skip processing its successors from here.
+        # This check should use the g-cost (current_state.cost).
+        current_hash = hash(current_state)
+        if current_hash in explored and current_state.cost > explored[current_hash]:
+             continue # Found a better path previously
 
-    print(f"Search terminated after exploring {nodes_explored} nodes.")
-    return None, nodes_explored, 0
+        # Explore successors
+        for successor_state in current_state.get_successors():
+            successor_hash = hash(successor_state)
+            g_successor = successor_state.cost # g(successor) = cost to reach it
+
+            # Check if successor is unexplored or found via a more expensive path
+            if successor_hash not in explored or g_successor < explored[successor_hash]:
+                explored[successor_hash] = g_successor # Update cost to reach successor
+                h_successor = heuristic(successor_state)
+                f_successor = g_successor + h_successor
+                heapq.heappush(frontier, (f_successor, unique_id, successor_state))
+                unique_id += 1
+
+    print(f"A*: No solution found. Nodes explored: {nodes_explored}, Max Depth: {max_depth}")
+    return None, nodes_explored, max_depth
