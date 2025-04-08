@@ -6,6 +6,24 @@ Wood Block Puzzle is a strategic puzzle game where players place wooden blocks o
 Author: Ricardo Gonçalves (rdtg94)
 Version: 3.0 (April 2025)
 
+## Screenshots
+
+*Gameplay in action (Hard difficulty):*
+![Wood Block Puzzle gameplay on Hard difficulty showing the board, current piece, score, and controls.](images_gameplay/main.png)
+
+*Main Menu - Select Difficulty:*
+![Main menu screen showing difficulty selection buttons: Easy (4x4), Medium (5x5), Hard (6x6), Expert (7x7), and Quit.](images_gameplay/menu.png)
+
+*Using the AI Hint feature:*
+![Gameplay screen showing the AI Hint suggesting a move at coordinates (2, 1).](images_gameplay/hint.png)
+
+*Game Over screen:*
+![Game Over screen indicating no valid moves left.](images_gameplay/game_over.png)
+
+*Victory screen:*
+![Victory screen after collecting all diamonds on Medium difficulty.](images_gameplay/victory.png)
+
+
 ## Game Objective
 - Place wooden blocks on the game board
 - Clear full lines and columns to earn points
@@ -88,8 +106,8 @@ pip install pygame pygame_gui
 ### Download Game Files
 Clone the repository or download the game files:
 ```bash
-git clone https://github.com/username/wood-block-puzzle.git
-cd wood-block-puzzle
+git clone https://github.com/rdtg94/wood_puzzle_game.git
+cd wood_block_puzzle
 ```
 
 ## Running the Game
@@ -112,6 +130,7 @@ The shell version provides the same gameplay mechanics but with a text-based int
 - **Ai_algorithms.py**: Implementation of hint system and search algorithms
 - **A_STAR.py**, **A_STAR_W.py**, **BFS.py**, etc.: Individual search algorithm implementations
 - **diamond.png**, **wood_texture.png**: Game assets
+- **images_gameplay**: Gameplay images
 
 ## Troubleshooting
 - **Missing Assets**: Ensure image files are in the same directory as the game
