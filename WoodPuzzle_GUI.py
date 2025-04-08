@@ -594,7 +594,7 @@ class WoodBlockPuzzleGUIEnhanced:
         """Draws the main menu with manual buttons."""
         try:
             title_surf = FONT_MENU_TITLE.render("Wood Block Puzzle AI", True, COLOR_TEXT)
-            title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.15 + 40))
+            title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.15))
             self.screen.blit(title_surf, title_rect)
             author_surf = FONT_AUTHOR.render("by Ricardo Gonçalves (rdtg94)", True, COLOR_AUTHOR)
             author_rect = author_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.15 + 90))
