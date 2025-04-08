@@ -8,20 +8,20 @@ Version: 3.0 (April 2025)
 
 ## Screenshots
 
-*Gameplay in action (Hard difficulty):*
-![Wood Block Puzzle gameplay on Hard difficulty showing the board, current piece, score, and controls.](images_gameplay/main.png)
+*Gameplay in action (Hard difficulty):*  
+<img src="images_gameplay/main.png" alt="Wood Block Puzzle gameplay on Hard difficulty showing the board, current piece, score, and controls." width="300">
 
-*Main Menu - Select Difficulty:*
-![Main menu screen showing difficulty selection buttons: Easy (4x4), Medium (5x5), Hard (6x6), Expert (7x7), and Quit.](images_gameplay/menu.png)
+*Main Menu - Select Difficulty:*  
+<img src="images_gameplay/menu.png" alt="Main menu screen showing difficulty selection buttons: Easy (4x4), Medium (5x5), Hard (6x6), Expert (7x7), and Quit." width="300">
 
-*Using the AI Hint feature:*
-![Gameplay screen showing the AI Hint suggesting a move at coordinates (2, 1).](images_gameplay/hint.png)
+*Using the AI Hint feature:*  
+<img src="images_gameplay/hint.png" alt="Gameplay screen showing the AI Hint suggesting a move at coordinates (2, 1)." width="300">
 
-*Game Over screen:*
-![Game Over screen indicating no valid moves left.](images_gameplay/game_over.png)
+*Game Over screen:*  
+<img src="images_gameplay/game_over.png" alt="Game Over screen indicating no valid moves left." width="300">
 
-*Victory screen:*
-![Victory screen after collecting all diamonds on Medium difficulty.](images_gameplay/victory.png)
+*Victory screen:*  
+<img src="images_gameplay/victory.png" alt="Victory screen after collecting all diamonds on Medium difficulty." width="300">
 
 
 ## Game Objective
