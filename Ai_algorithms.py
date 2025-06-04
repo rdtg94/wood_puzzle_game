@@ -155,9 +155,15 @@ def get_ai_move(game, algorithm, time_limit=DEFAULT_AI_TIME_LIMIT, selected_heur
     Calls the appropriate search function and returns the first step of the path.
     """
     # Create a GameState object representing the current live game state
+    # Support both GUI and shell game objects which may use different
+    # attribute names for the current piece
+    current_piece = getattr(game, 'current_piece', None)
+    if current_piece is None:
+        current_piece = getattr(game, 'current_piece_shape', None)
+
     initial_state = GameState(
         board=game.board,
-        current_piece=game.current_piece,
+        current_piece=current_piece,
         score=game.score,
         difficulty=game.difficulty,
         diamonds_collected=game.diamonds_collected,
