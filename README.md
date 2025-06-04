@@ -107,7 +107,7 @@ pip install pygame pygame_gui
 Clone the repository or download the game files:
 ```bash
 git clone https://github.com/rdtg94/wood_puzzle_game.git
-cd wood_block_puzzle
+cd wood_puzzle_game
 ```
 
 ## Running the Game
