@@ -119,7 +119,7 @@ python WoodPuzzle_GUI.py
 ### Shell Version
 The game also includes a console-based version for those who prefer to play in a terminal environment:
 ```bash
-python WoodPuzzle_Shell.py
+python WoodPuzzle_shell.py
 ```
 The shell version provides the same gameplay mechanics but with a text-based interface, making it suitable for environments where graphical display is unavailable or for users who prefer command-line interfaces.
 
